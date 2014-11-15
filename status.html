@@ -1,0 +1,161 @@
+
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>หน้าหลัก - Like by pure's app</title>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="description" content="" />
+		<meta name="keywords" content="" />
+		<!--[if lte IE 8]><script src="css/ie/html5shiv.js"></script><![endif]-->
+		<script src="z-config.js"></script>
+		<script src="js/jquery.min.js"></script>
+		<script src="js/jquery.dropotron.min.js"></script>
+		<script src="js/jquery.scrollgress.min.js"></script>
+		<script src="js/skel.min.js"></script>
+		<script src="js/skel-layers.min.js"></script>
+		<script src="js/init.js"></script>
+		<script src="js/init.js"></script>
+		<noscript>
+			<link rel="stylesheet" href="css/skel.css" />
+			<link rel="stylesheet" href="css/style.css" />
+			<link rel="stylesheet" href="css/style-wide.css" />
+		</noscript>
+		<!--[if lte IE 8]><link rel="stylesheet" href="css/ie/v8.css" /><![endif]-->
+	</head>
+	<body>
+	<div id="fb-root"></div>
+    <script>
+	//global var
+	var postcnt = 0;
+	var postoffset = 0;
+	$_GET = function(name, url) {
+		if (!url) {
+			url = window.location.href;
+        }
+        var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(url);
+        if (!results) { 
+            return 0; 
+        }
+        return results[1] || 0;
+    }
+	function dolike(id){
+		if(!localStorage.delayUntil||localStorage.delayUntil<(new Date).getTime()){
+		localStorage.delayUntil = (new Date).getTime()+(DELAY_LIKE*1000);		
+		$("#tool-"+id).html("<a><i class='fa fa-refresh fa-spin'></i></a>");
+		$.get("api.php?mode=downlike&id="+id,function(data){
+			console.log("got like = "+data);
+			$("#tool-"+id).html("<a><i class='fa fa-check'></i></a> <a href='https://www.facebook.com/"+id+"' target='_blank'><i class='fa fa-search'></i></a>");
+		});
+		} else {
+			alert("รออีก "+(localStorage.delayUntil-(new Date).getTime())/1000+" วินาที");		
+		}
+	}
+	function posttotable(){
+		$("#load-more").remove();
+		$("#post-display").append("<tr id='load-spin'><td colspan='3'><center><i class='fa fa-refresh fa-spin fa-2x'></i></center></td></tr>");
+		FB.api("/me/statuses?fields=id,message&limit="+STATUS_FETCH_LIMIT+"&offset="+postoffset,function(res){
+			var txt="";
+			res.data.forEach(function(q){
+				txt += "<tr><td>"+(++postcnt)+"</td><td>"+q.message+"</td><td style='white-space: nowrap;'><div id='tool-"+q.id+"'><a href='javascript:dolike("+q.id+")'><i class='fa fa-thumbs-o-up'></i></a> <a href='https://www.facebook.com/"+q.id+"' target='_blank'><i class='fa fa-search'></i></a></div></td></tr>";
+			});
+			txt+="<tr id='load-more'><td colspan='3'><center><a href='javascript:posttotable();'>โหลดเพิ่มเติม</a></center></td></tr>";
+			$("#load-spin").remove();
+			$("#post-display").append(txt);
+			postoffset +=STATUS_FETCH_LIMIT;
+		})
+	}
+	(function(d, s, id){
+		var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement(s); js.id = id;
+        js.src = "//connect.facebook.net/th_TH/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+	window.fbAsyncInit = function() {
+            FB.init({
+                appId      : APP_ID,
+                version    : GRAPH_VERSION,
+				status     : true,
+				cookie     : true,
+				xfbml      : true
+            });
+			FB.getLoginStatus(function(response) {
+                if (response.status === 'connected') {
+					FB.api('/me', function(res) {
+						$('#user-name').html(res.name);
+					});
+					posttotable();
+				} else {
+					window.location.href = "/index.html";
+				}
+			})
+	}
+	</script>
+		<!-- Header -->
+			<header id="header" class="skel-layers-fixed">
+				<h1><a href="index.html">Like</a> by pure's app</h1>
+				<nav id="nav">
+					<ul>
+						<li><a href="main.html">หน้าหลัก</a></li>
+						<li>
+							<a href="" class="icon fa-angle-down"><span id="user-name"></span></a>
+							<ul>
+								<li>
+									<a href="">ต้องการไลค์</a>
+									<ul>
+										<li><a href="status.php">สเตตัส</a></li>
+										<li><a href="photo.php">รูปภาพ</a></li>
+									</ul>
+								</li>
+								<li><a href="generic.html">สถิติ</a></li>
+								<li><a href="contact.html">สนับสนุนเซิฟ</a></li>
+								<li>
+									<a href="">วิธีการใช้งาน</a>
+									<ul>
+										<li><a href="#">กฏ/กติกา</a></li>
+										<li><a href="#">การขอไลค์</a></li>
+									</ul>
+								</li>
+								<li><a href="elements.html">ออกจากระบบ</a></li>
+							</ul>
+						</li>
+					</ul>
+				</nav>
+			</header>
+
+		<!-- Main -->
+			<section id="main" class="container">
+					<header>
+						<h2>Status</h2>
+						<p>เพิ่มไลค์ให้กับสเตตัสของคุณ</p>
+					</header>
+					<div class="table-wrapper">
+						<table >
+							<thead>
+								<tr>
+								<th>#</th>
+								<th>สเตตัส</th>
+								<th>คำสั่ง</th>
+								</tr>
+							</thead>
+							<tbody id="post-display">
+							</tbody>
+						</table>
+				</div>
+			</section>
+
+	<!-- Footer -->
+		<footer id="footer">
+			<ul class="icons">
+				<li><a href="https://www.facebook.com/appmadebypure" class="icon fa-facebook"><span class="label">Facebook</span></a></li>
+				<li><a href="https://www.github.com/pureexe" class="icon fa-github"><span class="label">Github</span></a></li>
+				<li><a href="https://plus.google.com/+pakkaponphongtawee" class="icon fa-google-plus"><span class="label">Google+</span></a></li>
+			</ul>
+			<ul class="copyright">
+				<li>&copy; <a href="https://www.pureapp.in.th">pure's app</a> All rights reserved.</li>
+				<li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+				<li>Hosted: <a href="https://bot-like.com">bot-like.com</a></li>
+			</ul>
+		</footer>
+	</body>
+</html>
